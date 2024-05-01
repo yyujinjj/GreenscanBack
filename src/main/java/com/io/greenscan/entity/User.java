@@ -1,13 +1,16 @@
 package com.io.greenscan.entity;
 
+import com.io.greenscan.dto.request.UserSignUpRequestDTO;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
+@NoArgsConstructor
 public class User {
 
     @Id
@@ -16,7 +19,7 @@ public class User {
 
     private String userName;
 
-    private String Password;
+    private String password;
 
     private String email;
 
@@ -26,4 +29,11 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<ExchangerTicket> exchangerTickets = new ArrayList<>();
+
+    public User(UserSignUpRequestDTO userSignUpRequestDTO) {
+        this.userName = userSignUpRequestDTO.getUserName();
+        this.password = userSignUpRequestDTO.getPassword();
+        this.email = userSignUpRequestDTO.getEmail();
+        this.phoneNumber = userSignUpRequestDTO.getPhoneNumber();
+    }
 }
