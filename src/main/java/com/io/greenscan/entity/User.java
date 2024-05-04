@@ -35,5 +35,6 @@ public class User {
         this.password = userSignUpRequestDTO.getPassword();
         this.email = userSignUpRequestDTO.getEmail();
         this.phoneNumber = userSignUpRequestDTO.getPhoneNumber();
+
     }
 }
