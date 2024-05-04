@@ -2,9 +2,11 @@ package com.io.greenscan.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor
 public class ExchangerTicket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
