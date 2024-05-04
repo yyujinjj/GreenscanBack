@@ -22,8 +22,20 @@ public class UserController {
     @PostMapping("/signup")
     public UserSignUpResponseDTO signup(@RequestBody UserSignUpRequestDTO userSignUpRequestDTO){
         log.info("회원가입 요청 들어옴");
-        UserSignUpResponseDTO responseDTO = userService.signup(userSignUpRequestDTO);
+
+        //비밀번호 유효성 검사
+        if (!isValidPassword(userSignUpRequestDTO.getPassword())){
+            throw new WeakPasswordException("비밀번호에 대소문자와 특수문자가 포함되어야 합니다.");
+        }
+        UserSignUpResponseDTO responseDTO=userService.signup(userSignUpRequestDTO);
         return responseDTO;
     }
 
+    private boolean isValidPassword(String password){
+        //비밀번호 유효성 검사 로직을 구현
+        //여기서는 간단히 대소문자와 특수문자가 포함되어 있는 지만 확인하는 예시를 제시
+        return password.matches(".*[a-z].*") // 소문자 포함 여부 확인
+                && password.matches(".*[A-Z].*") // 대문자 포함 여부 확인
+                && password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*"); // 특수문자 포함 여부 확인
+    }
 }
