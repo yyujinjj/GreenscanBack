@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class UserSignUpRequestDTO {
 
+    @NotNull(message = "사용자의 이름은 필수 입력 값 입니다.")
     private String userName;
 
     private String password;
@@ -16,4 +17,6 @@ public class UserSignUpRequestDTO {
     private String email;
 
     private String phoneNumber;
+
+    private String referralId;
 }

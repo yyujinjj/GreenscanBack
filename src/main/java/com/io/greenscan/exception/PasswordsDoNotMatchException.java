@@ -1,4 +1,4 @@
-package com.io.greenscan.controller.Greenscan;
+package com.io.greenscan.exception;
 
 public class PasswordsDoNotMatchException extends RuntimeException{
 
