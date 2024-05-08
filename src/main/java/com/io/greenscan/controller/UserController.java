@@ -1,5 +1,6 @@
 package com.io.greenscan.controller;
 
+import com.io.greenscan.dto.request.UserLoginRequestDTO;
 import com.io.greenscan.dto.request.UserSignUpRequestDTO;
 import com.io.greenscan.dto.response.UserSignUpResponseDTO;
 import com.io.greenscan.service.UserService;
@@ -30,5 +31,19 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK) //프론트에게 코드를 보내는 역할.
                 .body(responseDTO);//ResposeEntity에는 status와 데이터를 같이 보낼 수 있다.
         //status를 하면 안에 코드를 집어 넣을 수 있다. HttpStatus.OK로 넣을 수 있다. Status에 대한 코드가 날라간다.
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@Valid @RequestBody UserLoginRequestDTO userLoginRequestDTO) {
+        log.info("로그인 요청 들어옴");
+
+        // 로그인 처리
+        boolean loginSuccess = userService.login(userLoginRequestDTO);
+
+        if (loginSuccess) {
+            return ResponseEntity.ok("로그인 성공");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
+        }
     }
 }
