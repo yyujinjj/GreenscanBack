@@ -3,6 +3,8 @@ package com.io.greenscan.controller;
 import com.io.greenscan.exception.EmailAlreadyExistsException;
 import com.io.greenscan.exception.InvalidReferralIdException;
 import com.io.greenscan.exception.PasswordsDoNotMatchException;
+import com.io.greenscan.service.InvalidPasswordException;
+import com.io.greenscan.service.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -34,4 +36,15 @@ public class ControllerAdvice {
     public String handleEmailAlreadyExistsException(EmailAlreadyExistsException e) {
         return e.getMessage();
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<String> handleInvalidPasswordException(InvalidPasswordException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+    }
+
 }
