@@ -16,4 +16,5 @@ public class UserLoginRequestDTO {
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$", message = "대문자 1개, 소문자 1개, 특수문자 1개 이상 포함하세요.")
     private String password;
 
+
 }

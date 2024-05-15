@@ -1,23 +1,34 @@
 package com.io.greenscan.service;
 
+
 import com.io.greenscan.dto.request.UserLoginRequestDTO;
 import com.io.greenscan.dto.request.UserSignUpRequestDTO;
+import com.io.greenscan.dto.response.UserInfoDTO;
 import com.io.greenscan.dto.response.UserSignUpResponseDTO;
 import com.io.greenscan.entity.User;
 import com.io.greenscan.exception.EmailAlreadyExistsException;
 import com.io.greenscan.exception.InvalidReferralIdException;
 import com.io.greenscan.exception.PasswordsDoNotMatchException;
 import com.io.greenscan.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final JwtService jwtService;
+
+    @Autowired
+    public UserService(UserRepository userRepository, JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.jwtService = jwtService;
+    }
+
 
     public UserSignUpResponseDTO signup(UserSignUpRequestDTO userSignUpRequestDTO) {
         // 비밀번호 확인
@@ -48,7 +59,7 @@ public class UserService {
     }
 
     // 로그인 메서드
-    public boolean login(UserLoginRequestDTO userLoginRequestDTO) {
+    public String login(UserLoginRequestDTO userLoginRequestDTO) {
         // 이메일로 사용자 조회
         Optional<User> userOptional = userRepository.findByEmail(userLoginRequestDTO.getEmail());
 
@@ -64,7 +75,27 @@ public class UserService {
             throw new InvalidPasswordException("비밀번호를 잘못 입력하였습니다.");
         }
 
-        return false;
+        // 로그인 성공 시 JWT 토큰 생성
+        String token = jwtService.createToken(user.getEmail());
+        return token;
+    }
+
+    // 사용자 정보 조회 메서드
+    public UserInfoDTO getUserInfo(String token) {
+        // 토큰에서 사용자 이메일 추출
+        String email = jwtService.getUserEmail(token);
+
+        // 토큰에 포함된 사용자 이메일을 로그에 출력하여 디버깅
+        log.info("토큰에 포함된 사용자 이메일: {}", email);
+
+        // DB에서 이메일로 사용자 정보 조회
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 조회한 사용자 정보로 UserInfoDTO 생성하여 반환
+        return new UserInfoDTO(user.getUserName(), user.getPhoneNumber(), user.getExchangerTickets(), user.getMileage(), user.getEmail(), null);
+
+
     }
 }
 
