@@ -95,8 +95,19 @@ public class UserService {
         // 조회한 사용자 정보로 UserInfoDTO 생성하여 반환
         return new UserInfoDTO(user.getUserName(), user.getPhoneNumber(), user.getExchangerTickets(), user.getMileage(), user.getEmail(), null);
 
-
     }
+//    // 마일리지 정보 조회 메서드
+//    public MileageInfoDTO getMileageInfo(String token) {
+//        // 토큰에서 사용자 이메일 추출
+//        String email = jwtService.getUserEmail(token);
+//
+//        // DB에서 이메일로 사용자 정보 조회
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+//
+//        // 마일리지 정보를 MileageInfoDTO로 변환하여 반환
+//        return new MileageInfoDTO(user.getMileage());
+//    }
 }
 
 

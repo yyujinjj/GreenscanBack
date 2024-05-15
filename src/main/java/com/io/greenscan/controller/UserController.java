@@ -5,6 +5,8 @@ import com.io.greenscan.dto.request.UserSignUpRequestDTO;
 import com.io.greenscan.dto.response.UserInfoDTO;
 import com.io.greenscan.dto.response.UserSignUpResponseDTO;
 import com.io.greenscan.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +35,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody UserLoginRequestDTO userLoginRequestDTO) {
+    public ResponseEntity<String> login(@Valid @RequestBody UserLoginRequestDTO userLoginRequestDTO, HttpServletResponse response) {
         log.info("로그인 요청 들어옴");
 
         // 로그인 처리
