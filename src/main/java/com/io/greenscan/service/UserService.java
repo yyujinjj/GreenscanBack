@@ -1,15 +1,16 @@
 package com.io.greenscan.service;
 
 
+import com.io.greenscan.dto.request.UpdateProfileRequestDto;
 import com.io.greenscan.dto.request.UserLoginRequestDTO;
 import com.io.greenscan.dto.request.UserSignUpRequestDTO;
 import com.io.greenscan.dto.response.UserInfoDTO;
 import com.io.greenscan.dto.response.UserSignUpResponseDTO;
 import com.io.greenscan.entity.User;
-import com.io.greenscan.exception.EmailAlreadyExistsException;
-import com.io.greenscan.exception.InvalidReferralIdException;
-import com.io.greenscan.exception.PasswordsDoNotMatchException;
+import com.io.greenscan.exception.*;
 import com.io.greenscan.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,8 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class UserService {
+
+
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -96,6 +99,55 @@ public class UserService {
         return new UserInfoDTO(user.getUserName(), user.getPhoneNumber(), user.getExchangerTickets(), user.getMileage(), user.getEmail(), null);
 
     }
+
+    private User validateUser(String password, HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        String email = jwtService.getUserEmail(token);
+        Optional<User> userOptional = userRepository.findByEmailAndPassword(email, password);
+        if (userOptional.isPresent()) {
+            return userOptional.get();
+        } else {
+            throw new UserNotFoundException("사용자 인증에 실패했습니다.");
+        }
+    }
+
+
+    @Transactional
+    public UserInfoDTO updateUserProfile(UpdateProfileRequestDto requestDto, HttpServletRequest request) {
+        log.info("updateUserProfile Service");
+
+        // 토큰 확인
+        String token = request.getHeader("Authorization");
+        String email = jwtService.getUserEmail(token);
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        // 사용자 인증 확인
+//        User findUser = validateUser(requestDto.getPassword(), request);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException();
+        }
+        User findUser = userOptional.get();
+
+        // 사용자 정보 업데이트
+//        if (requestDto.getEmail() != null) {
+//            findUser.setEmail(requestDto.getEmail());
+//        }
+        if (requestDto.getUsername() != null) {
+            findUser.setUserName(requestDto.getUsername());
+        }
+        if (requestDto.getPassword() != null) {
+            findUser.setPassword(requestDto.getPassword());
+        }
+        if (requestDto.getPhoneNumber() != null) {
+            findUser.setPhoneNumber(requestDto.getPhoneNumber());
+        }
+
+        // 변경된 정보 저장
+        userRepository.save(findUser);
+
+        log.info("사용자 프로필 업데이트 성공");
+        return new UserInfoDTO(findUser);
+
+
 //    // 마일리지 정보 조회 메서드
 //    public MileageInfoDTO getMileageInfo(String token) {
 //        // 토큰에서 사용자 이메일 추출
@@ -108,6 +160,7 @@ public class UserService {
 //        // 마일리지 정보를 MileageInfoDTO로 변환하여 반환
 //        return new MileageInfoDTO(user.getMileage());
 //    }
+    }
 }
 
 

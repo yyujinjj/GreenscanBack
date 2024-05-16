@@ -1,5 +1,6 @@
 package com.io.greenscan.controller;
 
+import com.io.greenscan.dto.request.UpdateProfileRequestDto;
 import com.io.greenscan.dto.request.UserLoginRequestDTO;
 import com.io.greenscan.dto.request.UserSignUpRequestDTO;
 import com.io.greenscan.dto.response.UserInfoDTO;
@@ -68,4 +69,12 @@ public class UserController {
         }
         return null;
     }
+
+    @PostMapping("/update-profile")
+    public ResponseEntity<UserInfoDTO> updateProfile(@Valid @RequestBody UpdateProfileRequestDto requestDto, HttpServletRequest request) {
+        // 개인 정보 업데이트 서비스 호출
+        UserInfoDTO userInfo = userService.updateUserProfile(requestDto, request);
+        return ResponseEntity.ok(userInfo);
+    }
+
 }

@@ -17,6 +17,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
+    @Column(name = "username")
     private String userName;
 
     private String password;
@@ -30,6 +31,7 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<ExchangerTicket> exchangerTickets = new ArrayList<>();
 
+
     public User(UserSignUpRequestDTO userSignUpRequestDTO) {
         this.userName = userSignUpRequestDTO.getUserName();
         this.password = userSignUpRequestDTO.getPassword();
@@ -37,4 +39,24 @@ public class User {
         this.phoneNumber = userSignUpRequestDTO.getPhoneNumber();
 
     }
+
+    public void setEmail(String newEmail) {
+        this.email = newEmail;
+    }
+
+    public void setUserName(String newUsername) {
+        this.userName = newUsername;
+    }
+
+    public void setPassword(String newPassword) {
+        this.password = newPassword;
+    }
+
+    public void setPhoneNumber(String newPhoneNumber) {
+        this.phoneNumber = newPhoneNumber;
+    }
+
+
+
+
 }

@@ -1,4 +1,4 @@
-package com.io.greenscan.service;
+package com.io.greenscan.exception;
 
 public class InvalidPasswordException extends RuntimeException {
 
