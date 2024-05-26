@@ -50,20 +50,46 @@ public class UserService {
             // 회원가입 처리
             User user = new User(userSignUpRequestDTO);
             User savedUser = userRepository.save(user);
+
+            // 추천인 처리
+            if (userSignUpRequestDTO.getReferralId() != null) {
+                processReferral(userSignUpRequestDTO.getReferralId());
+            }
+
             return new UserSignUpResponseDTO(savedUser);
         }
         throw new EmailAlreadyExistsException("이미 등록된 이메일입니다.");
     }
 
-    private boolean isValidReferralId(String referralId) {
+
+
+    public void processReferral(String referralId) {
+        // 추천인 정보 조회
+        Optional<User> referralUserOptional = userRepository.findByEmail(referralId);
+        if (referralUserOptional.isPresent()) {
+            User referralUser = referralUserOptional.get();
+
+            // 추천인의 마일리지 증가
+            referralUser.setMileage(referralUser.getMileage() + 300);
+            userRepository.save(referralUser);
+        } else {
+            throw new InvalidReferralIdException("유효하지 않은 추천인 아이디입니다.");
+        }
+    }
+
+    public boolean isValidReferralId(String referralId) {
         // 데이터베이스에서 추천인 아이디 조회
         // 존재하는지 여부를 판단하여 반환
         return userRepository.existsByEmail(referralId);
     }
 
+
+
     // 로그인 메서드
     public String login(UserLoginRequestDTO userLoginRequestDTO) {
         // 이메일로 사용자 조회
+
+
         Optional<User> userOptional = userRepository.findByEmail(userLoginRequestDTO.getEmail());
 
         // 사용자가 존재하는지 확인
@@ -85,6 +111,7 @@ public class UserService {
 
     // 사용자 정보 조회 메서드
     public UserInfoDTO getUserInfo(String token) {
+        log.info("정보가 들어오긴 하나???");
         // 토큰에서 사용자 이메일 추출
         String email = jwtService.getUserEmail(token);
 
@@ -96,7 +123,7 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 조회한 사용자 정보로 UserInfoDTO 생성하여 반환
-        return new UserInfoDTO(user.getUserName(), user.getPhoneNumber(), user.getExchangerTickets(), user.getMileage(), user.getEmail(), null);
+        return new UserInfoDTO(user.getUserName(), user.getPhoneNumber(), user.getUserExchangers(), user.getMileage(), user.getEmail(), null);
 
     }
 

@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class JwtService {
         Claims claims = Jwts.claims().setSubject(userEmail);
 
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
-        byte[] secretKeyBytes = DatatypeConverter.parseBase64Binary(SECRET_KEY);
+        byte[] secretKeyBytes = Base64.getDecoder().decode(SECRET_KEY);
         Key signingKey = new SecretKeySpec(secretKeyBytes, signatureAlgorithm.getJcaName());
 
         JwtBuilder builder = Jwts.builder()
@@ -50,7 +50,7 @@ public class JwtService {
     }
 
     public String check(String token) throws Exception {
-        byte[] secretKeyBytes = DatatypeConverter.parseBase64Binary(SECRET_KEY);
+        byte[] secretKeyBytes = Base64.getDecoder().decode(SECRET_KEY);
         Key signingKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS512.getJcaName());
 
         Claims body = Jwts.parser()
@@ -66,7 +66,7 @@ public class JwtService {
 
     public String getUserEmail(String token) {
         try {
-            byte[] secretKeyBytes = DatatypeConverter.parseBase64Binary(SECRET_KEY);
+            byte[] secretKeyBytes = Base64.getDecoder().decode(SECRET_KEY);
             Key signingKey = new SecretKeySpec(secretKeyBytes, SignatureAlgorithm.HS256.getJcaName());
 
             Jws<Claims> claimsJws = Jwts.parserBuilder()

@@ -3,6 +3,10 @@ package com.io.greenscan.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -10,16 +14,15 @@ import lombok.NoArgsConstructor;
 public class ExchangerTicket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "exchanger_ticket_id")  // 여기서 컬럼명을 명시적으로 매핑
     private Long exchangerTicketId;
 
     private String exchangerTicketName;
 
-    private String exchangerTicketPrice;
+    private Long exchangerTicketPrice;
 
-    private String exchangerTicketBacode;
+    private String exchangerTicketBarcode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
-
+    @OneToMany(mappedBy = "exchangerTicket")
+    private List<UserExchanger> userExchangers = new ArrayList<>();
 }

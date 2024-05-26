@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +19,11 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequestMapping("/api/user")
 @RestController
-@RequiredArgsConstructor
+@RequiredArgsConstructor // final로 선언된 필드에 대한 생성자를 자동으로 생성한다.
 public class UserController {
 
     private final UserService userService;
+
 
 
     @PostMapping("/signup")// body안에 어떤 객체가 들어갈 것인지를 ~Entity<ooo> 안에 명시한다.
@@ -30,9 +32,16 @@ public class UserController {
 
         // 회원 가입 처리
         UserSignUpResponseDTO responseDTO = userService.signup(userSignUpRequestDTO);
-        return ResponseEntity.status(HttpStatus.OK) //프론트에게 코드를 보내는 역할.
-                .body(responseDTO);//ResposeEntity에는 status와 데이터를 같이 보낼 수 있다.
-        //status를 하면 안에 코드를 집어 넣을 수 있다. HttpStatus.OK로 넣을 수 있다. Status에 대한 코드가 날라간다.
+
+        // 추천인 처리
+        String referredUserId = userSignUpRequestDTO.getReferralId();
+        log.info("추천인에 대한 정보 불러옴");
+        if (referredUserId != null && !referredUserId.isEmpty()) {
+            userService.processReferral(referredUserId);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(responseDTO);
     }
 
     @PostMapping("/login")
@@ -54,8 +63,14 @@ public class UserController {
     //    // 사용자 정보 조회 엔드포인트 추가
     @GetMapping("/info")
     public ResponseEntity<UserInfoDTO> getMyPageInfo(HttpServletRequest request) {
+        log.info("이거는 되야될텐데/...");
         String token = request.getHeader("Authorization"); //토큰 꺼내오기
-        System.out.println(token);
+        if (token == null) {
+            log.info("토큰은 들어갔을라나..");
+            return ResponseEntity.status(401).body(null); // 또는 적절한 에러 메시지
+        }
+//        String token = request.getHeader("Authorization"); //토큰 꺼내오기
+//        System.out.println(token);
         UserInfoDTO userInfo = userService.getUserInfo(token);
         return ResponseEntity.ok(userInfo);
     }
@@ -70,11 +85,11 @@ public class UserController {
         return null;
     }
 
+
     @PostMapping("/update-profile")
     public ResponseEntity<UserInfoDTO> updateProfile(@Valid @RequestBody UpdateProfileRequestDto requestDto, HttpServletRequest request) {
         // 개인 정보 업데이트 서비스 호출
         UserInfoDTO userInfo = userService.updateUserProfile(requestDto, request);
         return ResponseEntity.ok(userInfo);
     }
-
 }
