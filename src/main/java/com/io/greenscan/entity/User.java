@@ -26,18 +26,21 @@ public class User {
 
     private String phoneNumber;
 
-    private Long mileage;
+    private long mileage = 0L;
+
 
     @OneToMany(mappedBy = "user")
-    private List<ExchangerTicket> exchangerTickets = new ArrayList<>();
+    private List<UserExchanger> userExchangers = new ArrayList<>();
 
+    @OneToOne
+    @JoinColumn(name="user_exchanger_id")
+    private UserExchanger userExchanger;
 
     public User(UserSignUpRequestDTO userSignUpRequestDTO) {
         this.userName = userSignUpRequestDTO.getUserName();
         this.password = userSignUpRequestDTO.getPassword();
         this.email = userSignUpRequestDTO.getEmail();
         this.phoneNumber = userSignUpRequestDTO.getPhoneNumber();
-
     }
 
     public void setEmail(String newEmail) {
@@ -56,7 +59,11 @@ public class User {
         this.phoneNumber = newPhoneNumber;
     }
 
+    public void setMileage(long newMileage){
+        this.mileage = newMileage;
+    }
 
-
-
+    public void setUserExchanger(UserExchanger userExchanger) {
+        this.userExchanger = userExchanger;
+    }
 }

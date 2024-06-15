@@ -8,9 +8,9 @@ import lombok.Setter;
 @Setter
 public class UserSignUpResponseDTO {
 
-    private Long userEmail;
+    private String userEmail;
 
     public UserSignUpResponseDTO(User user) {
-        this.userEmail = user.getUserId();
+        this.userEmail = user.getEmail();
     }
 }

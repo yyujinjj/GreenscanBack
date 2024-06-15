@@ -5,6 +5,7 @@ import com.io.greenscan.dto.request.UserLoginRequestDTO;
 import com.io.greenscan.dto.request.UserSignUpRequestDTO;
 import com.io.greenscan.dto.response.UserInfoDTO;
 import com.io.greenscan.dto.response.UserSignUpResponseDTO;
+import com.io.greenscan.service.JwtService;
 import com.io.greenscan.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,53 +19,58 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequestMapping("/api/user")
 @RestController
-@RequiredArgsConstructor
+@RequiredArgsConstructor // final로 선언된 필드에 대한 생성자를 자동으로 생성한다.
 public class UserController {
 
     private final UserService userService;
+    private final JwtService jwtService;
 
-
-    @PostMapping("/signup")// body안에 어떤 객체가 들어갈 것인지를 ~Entity<ooo> 안에 명시한다.
+    @PostMapping("/signup")
     public ResponseEntity<UserSignUpResponseDTO> signup(@Valid @RequestBody UserSignUpRequestDTO userSignUpRequestDTO) {
-        log.info("회원가입 요청 들어옴"); //Valid를 해야만 requestDTO에 해놨던 제약 조건이 걸린다.
+        log.info("회원가입 요청 들어옴");
 
-        // 회원 가입 처리
         UserSignUpResponseDTO responseDTO = userService.signup(userSignUpRequestDTO);
-        return ResponseEntity.status(HttpStatus.OK) //프론트에게 코드를 보내는 역할.
-                .body(responseDTO);//ResposeEntity에는 status와 데이터를 같이 보낼 수 있다.
-        //status를 하면 안에 코드를 집어 넣을 수 있다. HttpStatus.OK로 넣을 수 있다. Status에 대한 코드가 날라간다.
+
+        String referredUserId = userSignUpRequestDTO.getReferralId();
+        log.info("추천인에 대한 정보 불러옴");
+        if (referredUserId != null && !referredUserId.isEmpty()) {
+            userService.processReferral(referredUserId);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
     }
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@Valid @RequestBody UserLoginRequestDTO userLoginRequestDTO, HttpServletResponse response) {
         log.info("로그인 요청 들어옴");
 
-        // 로그인 처리
-//        boolean loginSuccess = Boolean.parseBoolean(userService.login(userLoginRequestDTO));  //true, false 값으로 파싱 자체가 불가능함.
-
         String token = userService.login(userLoginRequestDTO);
-//        if (loginSuccess) {
-        response.setHeader("Authorization", token);
+        response.setHeader("Authorization", "Bearer " + token);
         return ResponseEntity.ok("로그인 성공");
-//        } else {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
-//        }
     }
 
-    //    // 사용자 정보 조회 엔드포인트 추가
     @GetMapping("/info")
     public ResponseEntity<UserInfoDTO> getMyPageInfo(HttpServletRequest request) {
-        String token = request.getHeader("Authorization"); //토큰 꺼내오기
-        System.out.println(token);
+        log.info("사용자 정보 요청 들어옴");
+        String token = extractTokenFromRequest(request);
+        if (token == null) {
+            log.error("토큰이 없습니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        String userEmail = jwtService.getUserEmail(token);
+        if (userEmail == null || !jwtService.validateToken(token, userEmail)) {
+            log.error("유효하지 않은 JWT 토큰.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
         UserInfoDTO userInfo = userService.getUserInfo(token);
         return ResponseEntity.ok(userInfo);
     }
 
     private String extractTokenFromRequest(HttpServletRequest request) {
-        // HTTP 요청에서 Authorization 헤더에서 토큰 추출
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
-            // "Bearer " 부분을 제거하고 토큰만 반환
             return token.substring(7);
         }
         return null;
@@ -73,8 +79,34 @@ public class UserController {
     @PostMapping("/update-profile")
     public ResponseEntity<UserInfoDTO> updateProfile(@Valid @RequestBody UpdateProfileRequestDto requestDto, HttpServletRequest request) {
         // 개인 정보 업데이트 서비스 호출
-        UserInfoDTO userInfo = userService.updateUserProfile(requestDto, request);
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);  // Remove "Bearer " prefix
+        }
+        UserInfoDTO userInfo = userService.updateUserProfile(requestDto, token);
         return ResponseEntity.ok(userInfo);
     }
 
+
+//    @PostMapping("/update-profile")
+//    public ResponseEntity<UserInfoDTO> updateProfile(@Valid @RequestBody UpdateProfileRequestDto requestDto, HttpServletRequest request) {
+//        // 요청에서 토큰을 추출합니다.
+//        String token = extractTokenFromRequest(request);
+//        log.info("가");
+//        if (token == null) {
+//            log.error("토큰이 없습니다.");
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+//        }
+//
+//        String userEmail = jwtService.getUserEmail(token);
+//        log.info("나");
+//        if (userEmail == null || !jwtService.validateToken(token, userEmail)) {
+//            log.error("유효하지 않은 JWT 토큰.");
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+//        }
+//
+//        // 토큰과 함께 요청을 전달합니다.
+//        UserInfoDTO userInfo = userService.updateUserProfile(requestDto, request);
+//        return ResponseEntity.ok(userInfo);
+//    }
 }
