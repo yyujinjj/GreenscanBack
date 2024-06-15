@@ -1,4 +1,4 @@
-package com.io.greenscan.property;
+//package com.io.greenscan.property;
 
 //@ConfigurationProperties(prefix = "jwt")
 //
